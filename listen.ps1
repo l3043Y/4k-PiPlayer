@@ -1,3 +1,31 @@
+function Show-Notification {
+    param(
+        [String] $Title
+    )
+
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+    [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+
+    $APP_ID = 'VP.Start Video Looper'
+
+    $template = 
+    @"
+    <toast>
+        <visual>
+            <binding template="ToastText02">
+                <text id="1">$($Title)</text>
+                <text id="2">$(Get-Date -Format 'HH:mm:ss')</text>
+            </binding>
+        </visual>
+    </toast>
+"@
+
+    $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+    $xml.LoadXml($template)
+    $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($APP_ID).Show($toast)
+}
 function Test-KeyPress
 {
     param
@@ -77,13 +105,26 @@ do{
         $driveLabel = ([wmi]"Win32_LogicalDisk='$driveLetter'").VolumeName
         write-host (get-date -format s) " Drive name = " $driveLetter
         write-host (get-date -format s) " Drive label = " $driveLabel
-        # Execute process if drive matches specified condition(s)
-        if ($driveLetter -eq 'Z:' -and $driveLabel -eq 'Mirror')
-        {
-            write-host (get-date -format s) " Starting task in 3 seconds..."
-            start-sleep -seconds 3
-            # start-process "Z:\sync.bat"
+
+
+        $path = $driveLetter + "\VP.Start_Demo\"
+    
+        if (!(test-path $path)) {
+            mkdir $path
+            $note = $path + "PLACE_MP4_FILES_HERE"
+            New-Item $note
+            Show-Notification -Title "Directory Created!"
+            # Set-Content D:\temp\test\test.txt 'Welcome to TutorialsPoint'
+        } else {
+
         }
+        # # Execute process if drive matches specified condition(s)
+        # if ($driveLetter -eq 'Z:' -and $driveLabel -eq 'Mirror')
+        # {
+        #     write-host (get-date -format s) " Starting task in 3 seconds..."
+        #     start-sleep -seconds 3
+        #     # start-process "Z:\sync.bat"
+        # }
     }
     Remove-Event -SourceIdentifier volumeChange
 } while (1-eq1) #Loop until next event

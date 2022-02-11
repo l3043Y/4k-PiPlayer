@@ -1,38 +1,29 @@
 $APP_NAME = "VP.Start Video Looper"
 Write-Host "--------------$APP_NAME--------------"
 $vlc = '"C:\Program Files\VideoLAN\VLC\vlc.exe" '
-$video_dir = "\VP.Start_Demo\"
 $idle_video = '"C:\opt\Final Concept 3-4.mp4"'
 # $video_dir = "\VP.Start_Demo\"
 
-$loopOneVideo = '-L -f '
-$loopQueue = '--playlist-autostart --loop --playlist-tree '
-$loopOneVideoOnQueue = '-R -f --playlist-autostart --no-interact --playlist-tree '
+$loopOneVideo = '-R -f '
+# $loopQueue = '--playlist-autostart --loop --playlist-tree '
+# $loopOneVideoOnQueue = '-R -f --playlist-autostart --no-interact --playlist-tree '
 
 $loopIdleVideo = $vlc + $loopOneVideo + $idle_video
 # $command2 = $vlc + $loopQueue + $videoDir
 # $command3 = $vlc + $loopOneVideoOnQueue + $videoDir
 $terminateVLC = 'TASKKILL /IM VLC.EXE'
+$kill_exporerer = 'taskkill /F /IM explorer.exe'
+
 function Play-From-Drive{
     param(
         [String] $Drive_Letter
     )
     Invoke-Expression "& $terminateVLC"
-    $path = $Drive_Letter + $video_dir
-    write-host $path
-    if (!(test-path $path)) {
-        mkdir $path
-        Show-Notification -Title "Directory Created!"
-        # $note = $path + "PLACE_VIDEO_FILES_HERE"
-        # New-Item $note
-        # Set-Content $note 'VP.Start Video Looper'
-    } else {
-        Show-Notification -Title "Playing in 3 from " + $path
-        write-host (get-date -format s) " Starting task in 3 seconds..."
-        start-sleep -seconds 3
-        $PLAY = $vlc + $loopOneVideoOnQueue + $path
-        Invoke-Expression "& $PLAY"
-    }
+    $root_drive = $Drive_Letter + '\*'
+    $full_path_videos = Get-ChildItem $root_drive -Recurse -Include "*.mp4","*.MP4","*.Mp4", "*.hevc" | ForEach-Object { "$_" }
+    $JoinedString = '"' + ($full_path_videos -join '" "' ) + '"'
+    $loopMultipleFiles = $vlc + $loopOneVideo + $JoinedString
+    Invoke-Expression "& $loopMultipleFiles"
 }
 function Show-Notification {
     param(
@@ -61,7 +52,6 @@ function Show-Notification {
 }
 
 try {
-    $kill_exporerer = 'taskkill /F /IM explorer.exe'
     Invoke-Expression "& $kill_exporerer"
 
     $plugged_drive = Get-CimInstance -ClassName Win32_LogicalDisk | Where-Object{$_.DriveType -eq '2'}
@@ -69,6 +59,8 @@ try {
     # Write-Host $drive_l
     if($drive_l) {
         Play-From-Drive -Drive_Letter $drive_l
+    } else {
+        Invoke-Expression "& $loopIdleVideo"
     }
     # Main code
     Register-WmiEvent -Class win32_VolumeChangeEvent -SourceIdentifier volumeChange

@@ -1,8 +1,8 @@
 $APP_NAME = "VP.Start Video Looper"
 Write-Host "--------------$APP_NAME--------------"
 $vlc = '"C:\Program Files\VideoLAN\VLC\vlc.exe" '
-$idle_video = '"C:\opt\Final Concept 3-4.mp4"'
-$no_video = '"C:\opt\Final Concept 3-4.mp4"'
+$idle_video = '"C:\opt\idle.mp4"'
+$no_video = '"C:\opt\no_video.mp4"'
 
 $loopOneVideo = '--no-video-title-show -L -f '
 
@@ -21,7 +21,7 @@ function Play-From-Drive{
     $full_path_videos = Get-ChildItem $root_drive -Recurse -Include "*.mp4","*.MP4","*.Mp4", "*.hevc" | ForEach-Object { "$_" }
     $JoinedString = '"' + ($full_path_videos -join '" "' ) + '"'
     $loopMultipleFiles = $vlc + $loopOneVideo + $JoinedString
-    if($full_path_videos.Length() -gt 0 ) {
+    if($full_path_videos.Length -gt 0 ) {
         Invoke-Expression "& $loopMultipleFiles"
     } else {
         Invoke-Expression "& $loopNoVideo"

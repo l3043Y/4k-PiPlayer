@@ -2,15 +2,13 @@ $APP_NAME = "VP.Start Video Looper"
 Write-Host "--------------$APP_NAME--------------"
 $vlc = '"C:\Program Files\VideoLAN\VLC\vlc.exe" '
 $idle_video = '"C:\opt\Final Concept 3-4.mp4"'
-# $video_dir = "\VP.Start_Demo\"
+$no_video = '"C:\opt\Final Concept 3-4.mp4"'
 
-$loopOneVideo = '-R -f '
-# $loopQueue = '--playlist-autostart --loop --playlist-tree '
-# $loopOneVideoOnQueue = '-R -f --playlist-autostart --no-interact --playlist-tree '
+$loopOneVideo = '--no-video-title-show -L -f '
 
 $loopIdleVideo = $vlc + $loopOneVideo + $idle_video
-# $command2 = $vlc + $loopQueue + $videoDir
-# $command3 = $vlc + $loopOneVideoOnQueue + $videoDir
+$loopNoVideo = $vlc + $loopOneVideo + $no_video
+
 $terminateVLC = 'TASKKILL /IM VLC.EXE'
 $kill_exporerer = 'taskkill /F /IM explorer.exe'
 
@@ -23,7 +21,11 @@ function Play-From-Drive{
     $full_path_videos = Get-ChildItem $root_drive -Recurse -Include "*.mp4","*.MP4","*.Mp4", "*.hevc" | ForEach-Object { "$_" }
     $JoinedString = '"' + ($full_path_videos -join '" "' ) + '"'
     $loopMultipleFiles = $vlc + $loopOneVideo + $JoinedString
-    Invoke-Expression "& $loopMultipleFiles"
+    if($full_path_videos.Length() -gt 0 ) {
+        Invoke-Expression "& $loopMultipleFiles"
+    } else {
+        Invoke-Expression "& $loopNoVideo"
+    }
 }
 function Show-Notification {
     param(
